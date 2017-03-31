@@ -1,7 +1,0 @@
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://www.gonzalohernandezmunoz.com/apple-touch-icon-144x144.png" />
-<link rel="apple-touch-icon-precomposed" sizes="152x152" href="http://www.gonzalohernandezmunoz.com/apple-touch-icon-152x152.png" />
-<link rel="icon" type="image/png" href="http://www.gonzalohernandezmunoz.com/favicon-32x32.png" sizes="32x32" />
-<link rel="icon" type="image/png" href="http://www.gonzalohernandezmunoz.com/favicon-16x16.png" sizes="16x16" />
-<meta name="application-name" content="Gonzalo Hernandez"/>
-<meta name="msapplication-TileColor" content="#4690C1" />
-<meta name="msapplication-TileImage" content="http://www.gonzalohernandezmunoz.com/mstile-144x144.png" />
