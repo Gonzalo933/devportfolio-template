@@ -186,6 +186,10 @@ header {
     &.active {
         display: block;
     }
+    &.sticky {
+        position: fixed;
+        z-index: 999;
+    }
 }
 
 #menu {
