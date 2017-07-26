@@ -1,0 +1,25 @@
+https://www.dataquest.io/blog/how-to-setup-a-data-science-blog/
+instalar pelican (o todo el requirements: pip install -r requirements.txt)
+pelican-quickstart
+Crear carpeta pelican-plugins
+git submodule add git://github.com/danielfrg/pelican-ipynb.git pelican-plugins/ipynb
+modificar pelicanconf.py (ya esta)
+Desde el main folder:
+pelican content
+Para ver vista previa, desde carpeta output:
+python -m pelican.server
+
+Temas:
+https://github.com/getpelican/pelican-themes
+http://www.pelicanthemes.com/
+
+Como instalar temas:
+http://pbpython.com/pelican-config.html
+
+Crear carpeta pelican-themes
+copiar contenido de tema dentro
+Modificar pelicanconf.py y añadir 
+THEME = "pelican-themes/voidy-bootstrap"
+
+Si quieres añadir plugins estan en el repo:
+git clone https://github.com/getpelican/pelican-plugins.git
