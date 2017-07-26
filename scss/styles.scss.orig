@@ -187,6 +187,13 @@ header {
     &.active {
         display: block;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/RyanFitzgerald/master
+    &.sticky {
+        position: fixed;
+        z-index: 999;
     }
 }
 
