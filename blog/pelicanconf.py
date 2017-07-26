@@ -33,8 +33,11 @@ DEFAULT_PAGINATION = False
 
 MARKUP = ('md', 'ipynb')
 
-PLUGIN_PATHS = ['./plugins']
+PLUGIN_PATHS = ['pelican-plugins']
 PLUGINS = ['ipynb.markup']
+THEME = "pelican-themes/voidy-bootstrap"
+YEAR_ARCHIVE_SAVE_AS = 'posts/{date:%Y}/index.html'
+MONTH_ARCHIVE_SAVE_AS = 'posts/{date:%Y}/{date:%b}/index.html'
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
