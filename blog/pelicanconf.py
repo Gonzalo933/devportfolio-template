@@ -44,3 +44,4 @@ RELATIVE_URLS = True
 
 STATIC_PATHS = ['images', 'code']
 DISQUS_SITENAME = "portfolio-nemqpgn2nx"
+GOOGLE_ANALYTICS = "UA-83860748-1"
