@@ -42,6 +42,14 @@ MONTH_ARCHIVE_SAVE_AS = 'posts/{date:%Y}/{date:%b}/index.html'
 # Uncomment following line if you want document-relative URLs when developing
 RELATIVE_URLS = True
 
-STATIC_PATHS = ['images', 'code']
+STATIC_PATHS = [
+   'images',
+   'extra/favicon.ico',
+   'code'
+   ]
+   
+EXTRA_PATH_METADATA = {
+    'extra/favicon.ico': {'path': 'favicon.ico'}
+}   
 DISQUS_SITENAME = "portfolio-nemqpgn2nx"
 GOOGLE_ANALYTICS = "UA-83860748-1"
