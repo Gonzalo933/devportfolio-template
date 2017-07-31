@@ -8,7 +8,7 @@
     <meta name="author" content="Gonzalo Hernandez" />
     <meta name="generator" content="Pelican (VoidyBootstrap theme)" />
 
-    <title>K-Means - Machine Learning Blog</title>
+    <title>Introduction - Machine Learning Blog</title>
 
    
         <link rel="stylesheet"
@@ -79,11 +79,11 @@
 <article itemscope="itemscope" itemtype="http://schema.org/BlogPosting">
   <header class="article-header">
 <abbr class="article-header-date">
-  dom 30 julio 2017
+  sáb 29 julio 2017
 </abbr> <h1>
-  <a href="./k_means.html" rel="bookmark"
-     title="Permalink to K-Means">
-    K-Means
+  <a href="./introduction.html" rel="bookmark"
+     title="Permalink to Introduction">
+    Introduction
   </a>
 </h1><div class="article-header-info">
   <p>
@@ -1072,9 +1072,12 @@ h6:hover .anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id="k-means"></a>
-I want to start this little machine learning blog with a simple but effective algorithm to identify <a href="https://en.wikipedia.org/wiki/Cluster_analysis">clusters</a> in data. For those that are not familiar with the concept that means finding groups that could be used for finding  relations in all the observations that belongs to a cluster or just to find the number of different clusters in some data, for example, in a social network.</p>
-<p>As this is the first post I will explain some things about notations, that are also on the <a href="introduction.html#notation">introduction</a>:</p>
+<p>I always found machine learning as the black magic of the computer science world, with all those neural networks that nobody could explain me easily or those videos or machines doing crazy things like <a href="https://www.youtube.com/watch?v=pqKeXkhFA3I&amp;feature=youtu.be">creating front-end code from an image</a>.</p>
+<p>As seeing that it was interesting and most important it is the future I decided to start researching about it, but no like the people that just download a framework (and there is a lot of <a href="https://www.youtube.com/watch?v=pqKeXkhFA3I&amp;feature=youtu.be">good ones</a>!), I wanted to go deeper (machine learning pun intended), I wanted to be able to code and understand the algorithms and not using them as a black box, I wanted to be able to adapt them to the problems I wanted to solve. And how strange is life that just a few weeks after starting with it I received a chance to work at  the <a href="http://arantxa.ii.uam.es/~gaa/index.html">machine learning group</a> at Universidad Autónoma de Madrid.</p>
+<p>I created the blog more like a journal. I'm learning a lot, but a lot is too much to memorize everything, right now I'm studying some machine learning books, like Bishop's Pattern Recognition and Machine Learning or Duda & Hart book, and I'm not only trying to understand the algorithms and the mathematics behind, but I'm also implementing them and I would like to share some of my implementations on this blog. My research field is Gaussian Processes so expect a few more posts about that topic.</p>
+<p>I hope I can make the posts light and easy, but there is always room for improvements!</p>
+<p><a id="notation"></a></p>
+<h2 id="Notation">Notation<a class="anchor-link" href="#Notation">¶</a></h2><p>Last I will like to explain some of the notation that I'm going to use in the blog (I will be updating this part as I add more posts):</p>
 <ul>
 <li><p>All vectorial variables are written in bold ex: $ \mathbf{x} , \mathbf{y} $.</p>
 </li>
@@ -1086,281 +1089,6 @@ I want to start this little machine learning blog with a simple but effective al
 <p>$  \mathbf{X} = \begin{bmatrix}    x_{11} & \dots  & x_{1d} \\    x_{21} & \dots  & x_{2d} \\    \vdots & \ddots & \vdots \\    x_{n1} & \dots  & x_{nd}\end{bmatrix} $</p>
 </li>
 </ul>
-<p>K-means is an algorithm to partition $ N $ observations of a random D-dimensional variable $ \mathbf{X}$ (which we will refer as the dataset) into $ \mathit{K} $ clusters, the value of $ \mathit{K} $ is given to us. We can think of a cluster as a group of points (from the dataset) whose distance between each other are small compared to distances to points outside of the cluster.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="The-Dataset">The Dataset<a class="anchor-link" href="#The-Dataset">¶</a></h2><p>Lets study first the dataset we are going to work with. I chose one called old faithful, and if you ever read a book about machine learning you will study it deeply.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [1]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="c1">#loading the dataset</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span> <span class="c1"># Nice plots</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cmx</span>
-<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="k">import</span> <span class="n">cdist</span>
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'old_faithful.csv'</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># Round all data to two decimal places</span>
-<span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># Drop 1st column, we now have: 'eruptions' and 'waiting'</span>
-<span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="c1"># Standarize the data (make each variable zero mean and unit standard deviation)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">'eruptions'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">'waiting'</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">'scatter'</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="output_wrapper">
-<div class="output">
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg"><ipython-input-1-6e9c39d00a5d></span> in <span class="ansi-cyan-fg"><module></span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span> <span class="ansi-green-fg">from</span> scipy<span class="ansi-blue-fg">.</span>spatial<span class="ansi-blue-fg">.</span>distance <span class="ansi-green-fg">import</span> cdist
-<span class="ansi-green-intense-fg ansi-bold">      9</span> 
-<span class="ansi-green-fg">---> 10</span><span class="ansi-red-fg"> </span>df <span class="ansi-blue-fg">=</span> pd<span class="ansi-blue-fg">.</span>read_csv<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'old_faithful.csv'</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     11</span> df<span class="ansi-blue-fg">.</span>round<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">)</span> <span class="ansi-red-fg"># Round all data to two decimal places</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span> df<span class="ansi-blue-fg">.</span>drop<span class="ansi-blue-fg">(</span>df<span class="ansi-blue-fg">.</span>columns<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> inplace<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span> <span class="ansi-red-fg"># Drop 1st column, we now have: 'eruptions' and 'waiting'</span>
-
-<span class="ansi-green-fg">/home/gonzalo/anaconda3/lib/python3.6/site-packages/pandas/io/parsers.py</span> in <span class="ansi-cyan-fg">parser_f</span><span class="ansi-blue-fg">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, squeeze, prefix, mangle_dupe_cols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, dayfirst, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, escapechar, comment, encoding, dialect, tupleize_cols, error_bad_lines, warn_bad_lines, skipfooter, skip_footer, doublequote, delim_whitespace, as_recarray, compact_ints, use_unsigned, low_memory, buffer_lines, memory_map, float_precision)</span>
-<span class="ansi-green-intense-fg ansi-bold">    653</span>                     skip_blank_lines=skip_blank_lines)
-<span class="ansi-green-intense-fg ansi-bold">    654</span> 
-<span class="ansi-green-fg">--> 655</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> _read<span class="ansi-blue-fg">(</span>filepath_or_buffer<span class="ansi-blue-fg">,</span> kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    656</span> 
-<span class="ansi-green-intense-fg ansi-bold">    657</span>     parser_f<span class="ansi-blue-fg">.</span>__name__ <span class="ansi-blue-fg">=</span> name
-
-<span class="ansi-green-fg">/home/gonzalo/anaconda3/lib/python3.6/site-packages/pandas/io/parsers.py</span> in <span class="ansi-cyan-fg">_read</span><span class="ansi-blue-fg">(filepath_or_buffer, kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    403</span> 
-<span class="ansi-green-intense-fg ansi-bold">    404</span>     <span class="ansi-red-fg"># Create the parser.</span>
-<span class="ansi-green-fg">--> 405</span><span class="ansi-red-fg">     </span>parser <span class="ansi-blue-fg">=</span> TextFileReader<span class="ansi-blue-fg">(</span>filepath_or_buffer<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    406</span> 
-<span class="ansi-green-intense-fg ansi-bold">    407</span>     <span class="ansi-green-fg">if</span> chunksize <span class="ansi-green-fg">or</span> iterator<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/home/gonzalo/anaconda3/lib/python3.6/site-packages/pandas/io/parsers.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, f, engine, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    762</span>             self<span class="ansi-blue-fg">.</span>options<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">'has_index_names'</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> kwds<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">'has_index_names'</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">    763</span> 
-<span class="ansi-green-fg">--> 764</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_make_engine<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>engine<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    765</span> 
-<span class="ansi-green-intense-fg ansi-bold">    766</span>     <span class="ansi-green-fg">def</span> close<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/home/gonzalo/anaconda3/lib/python3.6/site-packages/pandas/io/parsers.py</span> in <span class="ansi-cyan-fg">_make_engine</span><span class="ansi-blue-fg">(self, engine)</span>
-<span class="ansi-green-intense-fg ansi-bold">    983</span>     <span class="ansi-green-fg">def</span> _make_engine<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> engine<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">'c'</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    984</span>         <span class="ansi-green-fg">if</span> engine <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">'c'</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--> 985</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>_engine <span class="ansi-blue-fg">=</span> CParserWrapper<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>f<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>self<span class="ansi-blue-fg">.</span>options<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    986</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    987</span>             <span class="ansi-green-fg">if</span> engine <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">'python'</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/home/gonzalo/anaconda3/lib/python3.6/site-packages/pandas/io/parsers.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, src, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1603</span>         kwds<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">'allow_leading_cols'</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>index_col <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">False</span>
-<span class="ansi-green-intense-fg ansi-bold">   1604</span> 
-<span class="ansi-green-fg">-> 1605</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_reader <span class="ansi-blue-fg">=</span> parsers<span class="ansi-blue-fg">.</span>TextReader<span class="ansi-blue-fg">(</span>src<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1606</span> 
-<span class="ansi-green-intense-fg ansi-bold">   1607</span>         <span class="ansi-red-fg"># XXX</span>
-
-<span class="ansi-green-fg">pandas/_libs/parsers.pyx</span> in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader.__cinit__ (pandas/_libs/parsers.c:4209)</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-green-fg">pandas/_libs/parsers.pyx</span> in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._setup_parser_source (pandas/_libs/parsers.c:8873)</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-red-fg">FileNotFoundError</span>: File b'old_faithful.csv' does not exist</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>I'm using <a href="http://pandas.pydata.org/pandas-docs/stable/">pandas</a> to work with the dataset.
-As you can see we are working in two dimensions (waiting time and eruptions), the code above rounds all the data to two decimals places, then "deletes" the first column (we don't need it, is just an index) and last it <a href="https://stats.idre.ucla.edu/stata/faq/how-do-i-standardize-variables-in-stata/">standardizes</a> the data.
-and we can already clearly see two clusters. If you don't see the clusters that I'm talking about I can help you with my ultra MS paint™ skills.</p>
-<p><img alt="Two Clusters, see?" src="images\dont_you_see_the_clusters.png" title="Two Clusters, see?" /></p>
-<h2 id="Formalizing-the-dataset">Formalizing the dataset<a class="anchor-link" href="#Formalizing-the-dataset">¶</a></h2><p>Lets start by naming some of the variables that we are going to use.</p>
-<p>We are working in two dimensions right? and we <a href="#k-means">stated</a> that we are working with a dataset $ \mathbf{X} $ of size $ N \times D $. Here we have our first variables:</p>
-<p>$ \mathbf{X} $ is the dataset matrix, one row for each observation, and each observation has two values (waiting and eruptions) so we got that the size of the matrix is:</p>
-<p>$ N = 272 $ (trust me on this one) $\times$ $ D = 2 $</p>
-<p>Now we need to choose in how many cluster we want to divide the data, we already saw that there are probably two clusters, so lets assume that, set $ K = 2 $.</p>
-<p>we can now add that to the code</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [ ]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
-<span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">K</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">D</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># number of dimensions of the problem</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>$\newcommand{\bs}[1]{\boldsymbol{#1}}$
-$\newcommand{\Epsilon}[0]{\mathcal{E}}$
-We are still missing some things before we can start. If we are going to create clusters we need to define the centers of the clusters, for example we can store one of the centers in a variable $ \bs{\mu} $ that would need to be of size D. If we have K clusters then our variable $ \bs{\mu} $ (it's uppercase even if it doesn't look like it) would be of size $ K\times D $.</p>
-<p>We also need something to describe to which cluster is each point assigned. We can do that with another matrix $R$ of size $N\times K$, the matrix means something like this: We have a row for each of the points ($N$) and each row has $1$ in the position of the cluster that the point is assigned to and $0$ on the rest of the positions.</p>
-<p>Here is an example to understand it better:</p>
-$$ \underset{N\times K}{\mathbf{R}} = \begin{bmatrix}
-    1 & 0\\
-    0 & 1\\
-    1 & 0 \\
-    \vdots & \vdots
-    \end{bmatrix} $$<p>It says that the first datapoint is assigned to the first cluster, the second point to the second one and the third one to the first cluster. (note that <strong>each point can only be assigned to one and only one of the clusters</strong>).</p>
-<h2 id="Math-time">Math time<a class="anchor-link" href="#Math-time">¶</a></h2><p>Now we need and algorithm that give us the best choices for both the assignments and the centers of the clusters but
-if we expect to implement an algorithm we are going to need math, don't worry this ones aren't complicated.</p>
-<p>We can start with a function $J()$ that tell us how good or how bad our algorithm is doing, we call that <em>the objective funcion</em> or <em>the error function</em> and we can use something as simple as this:
-$$ J = \sum_{n=1}^{N}\sum_{k=1}^{K} r_{nk}|| \bs{x_n} - \bs{\mu_k} ||^2 \tag{1}$$</p>
-<p>This represents the <a href="https://en.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance">sum of the squares</a> of the distances of each point to the center of the assigned cluster.</p>
-<p>We can break the equation to understand it better (or you can skip the exaplanation if you feel confident).
-we are going to loop through all the points and all the clusters that means that if $r_{nk} = 1 $ we are in a point $ x_n $ that belongs to the cluster $ k $ and we calculate the distance from $ \bs{x_n} $ to $ \bs{\mu_k} $ and we add that value to our total error (we are in a summation). If $r_{nk} = 0 $ the point doesn't belong to the cluster and we don't even need to calculate anything, we sum 0 to the error.</p>
-<p>Okay so now we have some function that we can call with some parameters and give us a number that tell us if we are in the correct path to solve the problem, we obviously want a small error, so we want to minimize $J$.</p>
-<p>take a look at $ (1) $ again, we see that it depends on $\bs{X}, \mu $ and $\bs{R}$, and of that list we can only change $ R $ and $ \mu $ so our goal now is to find the values of those variables that minimize $J$, we can do that in two phases, first minimizing $J$ with respect to $\bs{R}$ fixing the other parameters and then with respect to $\mu $ fixing the other parameters.</p>
-<h2 id="Optimize-$R$">Optimize $R$<a class="anchor-link" href="#Optimize-$R$">¶</a></h2><p>because $(1)$ is a linear function of $r_{nk}$ we can optimize for each datapoint esparately by doing this:</p>
-$$ 
-r_{nk} = 
-\begin{cases} 
-    1 & \text{if $k$ = arg  $min_j || \bs{x_n} - \bs{\mu_j} ||^2 $} \\
-    0 & \text{otherwise} 
-\end{cases}
-$$<p>intuitively that means that we calculate all distances to all centers  of the $ n^{th} $ point and assign the $n^{th}$ data point to the closest cluster centre (the one with less distance $|| \bs{x_n} - \bs{\mu_j} ||^2$.</p>
-<p>now to optimize the cluster centres $\bs{\mu_k} $ we can set the derivative of $(1)$ to zero with respect to $\bs{\mu_k} $ and we have
-$$
-2\sum_{n=1}^{N}r_{nk}(\bs{x_n} - \bs{\mu_k}) = 0
-$$
-$$
-\bs{\mu_k} = \frac{\sum_{n=1}^{N} r_{nk}\bs{x_n}}{\sum_{n=1}^{N}r_{nk}} \tag{2}
-$$</p>
-<p>eq $(2)$ just says: 
-$$ 
-\bs{\mu_k} = \frac{\text{sum of the values of points assigned to cluster k}}{\text{number of points assigned to cluster k}}
-$$</p>
-<p><a href="https://en.wikipedia.org/wiki/Arithmetic_mean">sounds familiar?</a>, well that is why is called K-means. Now we can start with the fun part and code all of this.</p>
-<p>Note: the trick to make an algortihm fast in machine learning is to vectorize all the operations instead of looping through the values. we could code the eq. $(1)$ as two for loops but we will be making our algorithm $O(N^2)$ if we code it the way is done below the time complexity is $O(N)$ but it is equivalent. we also converted the matrix $R$ in a vector called <code>labels</code> of size $N$ which each value can take any number from $ 0 $ to $ K - 1$</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [ ]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Error function</span>
-<span class="k">def</span> <span class="nf">J</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">distance</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">distances</span><span class="p">):</span>
-        <span class="n">error</span> <span class="o">+=</span> <span class="n">distance</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">n</span><span class="p">]]</span> <span class="c1"># we could have made it even more vectorial, but it's not worth it</span>
-    <span class="k">return</span> <span class="n">error</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We can start initializing the cluster centers at random (or better, choose some acceptable centers).
-We then calculate the distances matrix <code>squared_distances</code> (corresponding to $|| \bs{x_n} - \bs{\mu_k} ||^2  $ and to which cluster are closer, called <code>labels</code>.</p>
-<p>I also printed the error (this is optative but helps so we know if we are doing it right, because it should be decreasing in each iteration).</p>
-<p>This is the final code then:</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [ ]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"figure.figsize"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="c1">#Bigger images</span>
-
-<span class="n">MU</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">]])</span>
-<span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">7</span>
-
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
-    <span class="c1"># Calculate distance from each datapoint to each cluster center</span>
-    <span class="n">squared_distances</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">MU</span><span class="p">,</span> <span class="s1">'sqeuclidean'</span><span class="p">)</span> <span class="c1"># NxK matrix</span>
-    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">squared_distances</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Nx1 and each value tell us which index is associated which each datapoint</span>
-
-    <span class="c1"># calculate the means of all datapoints assigned to each cluster (Kx1)</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
-        <span class="c1"># points_of_cluster k -> X[labels == k]</span>
-        <span class="c1"># new centers</span>
-        <span class="n">MU</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">k</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#out=MU[k]    </span>
-    <span class="c1"># Error should be decreasing</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Current error: </span><span class="si">{0}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">J</span><span class="p">(</span><span class="n">squared_distances</span><span class="p">,</span> <span class="n">labels</span><span class="p">)))</span>
-    <span class="c1"># end of iteration, now we have labels of which cluster the datapoint is associated and the new cluster locations (MU)</span>
-<span class="c1">#plt.figure()</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">'eruptions'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">'waiting'</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">'labels'</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">cmx</span><span class="o">.</span><span class="n">coolwarm</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">MU</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">MU</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">'o'</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s1">'c'</span><span class="p">,</span> <span class="s1">'#DA0AF0'</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We see the two clusters (in red and blue), corresponding to plotting the matrix $\bs{X}$ and choosing the color according to the value of <code>labels[N]</code> (if is equal to 0 or 1).</p>
-<p>The cluster centers are also plotted (in magenta and cyan) and effectively we see that it correspond to the mean value of all the points of each cluster.</p>
-<p>Last, we can check that in each iteration the error was decreasing, I can plot that too so we can also see that there is a point in which it stops changing (we say that "the algorithm has converged")</p>
-<p><img alt="Plotting Error" src="images\error_minimizing.png" title="Error reduction" /></p>
-<p>I also created a gif ilustrating each iteration of the algorithm. I plotted two figures for each iteration, one showing the updates of the labels in which each point get assigned to a center deopending on in which side of the line (that's the perpendicular bisector between the centers) is at and another update showing the new cluster centers.</p>
-<p><img alt="Iterations" src="images\iterations.gif" title="Iterations" /></p>
-<p>And that was pretty much everything, you can <a href="./code/k_means.zip">download the source</a> and soon I will upload another blog entry with an interesting application of K-means to image compression.</p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="References">References<a class="anchor-link" href="#References">¶</a></h5><p>Bishop, Christopher M. Pattern recognition and machine learning. springer, 2006.</p>
-<p><a href="https://en.wikipedia.org/wiki/Cluster_analysis">https://en.wikipedia.org/wiki/Cluster_analysis</a></p>
-<p><a href="https://en.wikipedia.org/wiki/K-means_clustering">https://en.wikipedia.org/wiki/K-means_clustering</a></p>
-<p><a href="https://stats.idre.ucla.edu/stata/faq/how-do-i-standardize-variables-in-stata/">https://stats.idre.ucla.edu/stata/faq/how-do-i-standardize-variables-in-stata/</a></p>
-<p><a href="https://en.wikipedia.org/wiki/Arithmetic_mean">https://en.wikipedia.org/wiki/Arithmetic_mean</a></p>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [ ]:</div>
-<div class="inner_cell">
-<div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-</div>
 </div>
 </div>
 </div>
