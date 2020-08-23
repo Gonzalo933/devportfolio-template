@@ -1,3 +1,7 @@
+# How to create dist files
+
+The static website can be compiled with `make all`. This will create a `dist/` folder with all the needed files for the website. Any changes in the `.js` or `.scss` files will be included.
+
 # Dev Portfolio Template
 
 This repo contains an easy-to-customize personal dev portfolio template that was created with Sass and JavaScript. It is lightweight and fully responsive, as well as comes with the Bootstrap grid system and loaded with Font Awesome. The site is static and comes production ready if you just want to add your information and go. Alternatively, you can edit styles, colours, and scripts fairly easily. The site was built as modular as possible to make it easy to shift around styles and content.
@@ -14,10 +18,14 @@ To view a live demo, [click here](https://ryanfitzgerald.github.io/devportfolio-
 
 ## Contents
 
-- [Setup and Configuration](#setup-and-configuration)
+- [How to create dist files](#how-to-create-dist-files)
+- [Dev Portfolio Template](#dev-portfolio-template)
+  - [Features](#features)
+  - [Contents](#contents)
+  - [Setup and Configuration](#setup-and-configuration)
     - [Making Edits / Customizing the Template](#making-edits--customizing-the-template)
-    - [Using the Template As Is](#using-the-template-as-is)
-- [Customization and Editing](#customization-and-editing)
+    - [Using The Template As Is](#using-the-template-as-is)
+  - [Customization and Editing](#customization-and-editing)
     - [General](#general)
     - [Images](#images)
     - [Header Section](#header-section)
@@ -30,8 +38,13 @@ To view a live demo, [click here](https://ryanfitzgerald.github.io/devportfolio-
     - [Contact Section](#contact-section)
     - [Footer Section](#footer-section)
     - [Optional Sections](#optional-sections)
-- [Changelog](#changelog)
-- [License](#license)
+  - [Changelog](#changelog)
+    - [1.2.0](#120)
+    - [1.1.3](#113)
+    - [1.1.2](#112)
+    - [1.1.1](#111)
+    - [1.1.0](#110)
+  - [License](#license)
 
 ## Setup and Configuration
 
