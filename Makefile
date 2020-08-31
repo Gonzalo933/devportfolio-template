@@ -16,6 +16,8 @@ dist: build
 	cp js/gon_analytics.js dist/js/
 	cp favicon.ico dist/
 	cp -r images/ dist/
+	cp -r libs/ dist/
+	cp css/bootstrap.min.css dist/css
 
 clean:
 	rm -rf dist/*
