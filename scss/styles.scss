@@ -359,6 +359,7 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+    font-size: 15px;
 
     h1, h2 {
         margin: 0;
@@ -529,6 +530,11 @@ footer {
         font-size: 0.9em;
         margin: 0;
     }
+    li {
+        color: $text;
+        font-size: 0.9em;
+        margin: 0;
+    }
 }
 
 .vtimeline-point {
@@ -629,7 +635,7 @@ footer {
 #projects {
     padding: 50px 15px;
     border-bottom: 1px solid $border;
-    text-align: justify;
+    text-align: center;
 
     h2 {
         color: $heading;
@@ -656,18 +662,24 @@ footer {
     transform: translateY(-50%);
     margin-left: 300px;
     padding: 15px;
+    text-align: justify;
 
     h3 {
         font-size: 1.5em;
         font-weight: 300;
         color: $heading;
         margin: 0 0 15px 0;
+        text-align: center;
     }
 
     p {
         color: $text;
         margin: 0 0 15px 0;
         font-size: 0.9em;
+    }
+
+    .center-link{
+        text-align: center;
     }
 }
 
